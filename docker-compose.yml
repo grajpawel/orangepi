@@ -1,0 +1,94 @@
+version: "3.8"
+
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: always
+    ports:
+      - "9000:9000"
+      - "8000:8000"
+    volumes:
+      - portainer_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    restart: unless-stopped
+    env_file: 
+      - .env.pihole
+    environment:
+      TZ: "${TZ}"
+      WEBPASSWORD: "${PIHOLE_WEBPASSWORD}"
+      DNS1: 1.1.1.1
+      DNS2: 1.0.0.1
+    volumes:
+      - pihole_etc:/etc/pihole
+      - pihole_dnsmasq:/etc/dnsmasq.d
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "80:80/tcp"
+    networks:
+      - backend
+    cap_add:
+      - NET_ADMIN
+
+  influxdb:
+    image: influxdb:2.7
+    container_name: influxdb
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb2:/var/lib/influxdb2
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: "${INFLUX_INIT_USERNAME}"
+      DOCKER_INFLUXDB_INIT_PASSWORD: "${INFLUX_INIT_PASSWORD}"
+      DOCKER_INFLUXDB_INIT_ORG: "${INFLUX_ORG}"
+      DOCKER_INFLUXDB_INIT_BUCKET: "${INFLUX_BUCKET}"
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "${INFLUX_INIT_TOKEN}"
+    networks:
+      - backend
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    restart: unless-stopped
+    depends_on:
+      - influxdb
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: "admin"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD}"
+    networks:
+      - backend
+
+  pinger:
+    build:
+      context: ./pinger
+      dockerfile: Dockerfile
+    container_name: pinger
+    restart: unless-stopped
+    depends_on:
+      - influxdb
+    env_file:
+      - .env.monitor
+    networks:
+      - backend
+
+volumes:
+  portainer_data:
+  pihole_etc:
+  pihole_dnsmasq:
+  influxdb2:
+  grafana_data:
+
+networks:
+  backend:
+    driver: bridge
