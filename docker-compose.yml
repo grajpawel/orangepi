@@ -2,33 +2,34 @@ version: '3.8'
 services:
 
   pihole:
-    image: 'pihole/pihole:latest'
+    image: pihole/pihole:latest
+    container_name: pihole_stack
     restart: unless-stopped
-    env_file:
-      - .env.pihole
     environment:
-      TZ: '${TZ}'
-      WEBPASSWORD: '${PIHOLE_WEBPASSWORD}'
-    network_mode: host
+      TZ: "Europe/Warsaw"
+      WEBPASSWORD: ""
+      DNS1: "1.1.1.1"
+      DNS2: "1.0.0.1"
+    network_mode: "host"
     volumes:
-      - 'pihole_etc:/etc/pihole'
-      - 'pihole_dnsmasq:/etc/dnsmasq.d'
+      - pihole_etc:/etc/pihole
+      - pihole_dnsmasq:/etc/dnsmasq.d
       
   influxdb:
-    image: 'influxdb:2.7'
+    image: influxdb:2.7
     container_name: influxdb
     restart: unless-stopped
     ports:
-      - '8086:8086'
+      - "8086:8086"
     volumes:
-      - 'influxdb2:/var/lib/influxdb2'
+      - influxdb2:/var/lib/influxdb2
     environment:
       DOCKER_INFLUXDB_INIT_MODE: setup
-      DOCKER_INFLUXDB_INIT_USERNAME: '${INFLUX_INIT_USERNAME}'
-      DOCKER_INFLUXDB_INIT_PASSWORD: '${INFLUX_INIT_PASSWORD}'
-      DOCKER_INFLUXDB_INIT_ORG: '${INFLUX_ORG}'
-      DOCKER_INFLUXDB_INIT_BUCKET: '${INFLUX_BUCKET}'
-      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: '${INFLUX_INIT_TOKEN}'
+      DOCKER_INFLUXDB_INIT_USERNAME: "admin"
+      DOCKER_INFLUXDB_INIT_PASSWORD: "changeme"
+      DOCKER_INFLUXDB_INIT_ORG: "my-org"
+      DOCKER_INFLUXDB_INIT_BUCKET: "network_metrics"
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "my-super-secret-token"
       
   grafana:
     image: 'grafana/grafana-oss:latest'
