@@ -10,18 +10,18 @@ services:
     volumes:
       - 'portainer_data:/data'
       - '/var/run/docker.sock:/var/run/docker.sock'
-pihole:
-  image: 'pihole/pihole:latest'
-  restart: unless-stopped
-  env_file:
-    - .env.pihole
-  environment:
-    TZ: '${TZ}'
-    WEBPASSWORD: '${PIHOLE_WEBPASSWORD}'
-  network_mode: host
-  volumes:
-    - 'pihole_etc:/etc/pihole'
-    - 'pihole_dnsmasq:/etc/dnsmasq.d'
+  pihole:
+    image: 'pihole/pihole:latest'
+    restart: unless-stopped
+    env_file:
+      - .env.pihole
+    environment:
+      TZ: '${TZ}'
+      WEBPASSWORD: '${PIHOLE_WEBPASSWORD}'
+    network_mode: host
+    volumes:
+      - 'pihole_etc:/etc/pihole'
+      - 'pihole_dnsmasq:/etc/dnsmasq.d'
   influxdb:
     image: 'influxdb:2.7'
     container_name: influxdb
