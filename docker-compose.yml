@@ -30,8 +30,6 @@ services:
       - "53:53/tcp"
       - "53:53/udp"
       - "80:80/tcp"
-    networks:
-      - backend
     cap_add:
       - NET_ADMIN
 
@@ -50,8 +48,6 @@ services:
       DOCKER_INFLUXDB_INIT_ORG: "${INFLUX_ORG}"
       DOCKER_INFLUXDB_INIT_BUCKET: "${INFLUX_BUCKET}"
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "${INFLUX_INIT_TOKEN}"
-    networks:
-      - backend
 
   grafana:
     image: grafana/grafana-oss:latest
@@ -66,8 +62,6 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: "admin"
       GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD}"
-    networks:
-      - backend
 
   pinger:
     build:
@@ -79,8 +73,6 @@ services:
       - influxdb
     env_file:
       - .env.monitor
-    networks:
-      - backend
 
 volumes:
   portainer_data:
@@ -88,7 +80,3 @@ volumes:
   pihole_dnsmasq:
   influxdb2:
   grafana_data:
-
-networks:
-  backend:
-    driver: bridge
