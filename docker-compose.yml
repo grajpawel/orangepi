@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     environment:
       TZ: "Europe/Warsaw"
-      WEBPASSWORD: ""
+      WEBPASSWORD: "admin"
       DNS1: "1.1.1.1"
       DNS2: "1.0.0.1"
     network_mode: "host"
@@ -43,7 +43,7 @@ services:
       - 'grafana_data:/var/lib/grafana'
     environment:
       GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: '${GRAFANA_ADMIN_PASSWORD}'
+      GF_SECURITY_ADMIN_PASSWORD: admin123
       
   pinger:
     build:
@@ -53,8 +53,6 @@ services:
     restart: unless-stopped
     depends_on:
       - influxdb
-    env_file:
-      - .env.monitor
       
 volumes:
   portainer_data: null
