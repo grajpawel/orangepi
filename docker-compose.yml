@@ -1,15 +1,6 @@
 version: '3.8'
 services:
-  portainer:
-    image: 'portainer/portainer-ce:latest'
-    container_name: portainer_stack
-    restart: always
-    ports:
-      - '9001:9000'
-      - '8001:8000'
-    volumes:
-      - 'portainer_data:/data'
-      - '/var/run/docker.sock:/var/run/docker.sock'
+
   pihole:
     image: 'pihole/pihole:latest'
     restart: unless-stopped
@@ -22,6 +13,7 @@ services:
     volumes:
       - 'pihole_etc:/etc/pihole'
       - 'pihole_dnsmasq:/etc/dnsmasq.d'
+      
   influxdb:
     image: 'influxdb:2.7'
     container_name: influxdb
@@ -37,6 +29,7 @@ services:
       DOCKER_INFLUXDB_INIT_ORG: '${INFLUX_ORG}'
       DOCKER_INFLUXDB_INIT_BUCKET: '${INFLUX_BUCKET}'
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: '${INFLUX_INIT_TOKEN}'
+      
   grafana:
     image: 'grafana/grafana-oss:latest'
     container_name: grafana
@@ -50,6 +43,7 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: '${GRAFANA_ADMIN_PASSWORD}'
+      
   pinger:
     build:
       context: ./pinger
@@ -60,6 +54,7 @@ services:
       - influxdb
     env_file:
       - .env.monitor
+      
 volumes:
   portainer_data: null
   pihole_etc: null
