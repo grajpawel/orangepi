@@ -30,6 +30,7 @@ services:
       DOCKER_INFLUXDB_INIT_ORG: "my-org"
       DOCKER_INFLUXDB_INIT_BUCKET: "network_metrics"
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "my-super-secret-token"
+      DOCKER_INFLUXDB_INIT_BUCKET_RETENTION: 336h
       
   grafana:
     image: 'grafana/grafana-oss:latest'
