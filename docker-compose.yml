@@ -54,6 +54,15 @@ services:
     restart: unless-stopped
     depends_on:
       - influxdb
+    environment:
+      INFLUX_URL: http://influxdb:8086
+      INFLUX_TOKEN: my-super-secret-token
+      INFLUX_ORG: my-org
+      INFLUX_BUCKET: network_metrics
+      PING_TARGET: 1.1.1.1
+      PING_INTERVAL: 30
+    networks:
+      - backend
       
 volumes:
   portainer_data: null
