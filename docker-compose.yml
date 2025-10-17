@@ -1,60 +1,55 @@
-version: "3.8"
-
+version: '3.8'
 services:
   portainer:
-    image: portainer/portainer-ce:latest
+    image: 'portainer/portainer-ce:latest'
     container_name: portainer_stack
     restart: always
     ports:
-      - "9001:9000" 
-      - "8001:8000"
+      - '9001:9000'
+      - '8001:8000'
     volumes:
-      - portainer_data:/data
-      - /var/run/docker.sock:/var/run/docker.sock
-
+      - 'portainer_data:/data'
+      - '/var/run/docker.sock:/var/run/docker.sock'
 pihole:
-  image: pihole/pihole:latest
+  image: 'pihole/pihole:latest'
   restart: unless-stopped
   env_file:
     - .env.pihole
   environment:
-    TZ: "${TZ}"
-    WEBPASSWORD: "${PIHOLE_WEBPASSWORD}"
-  network_mode: "host"
+    TZ: '${TZ}'
+    WEBPASSWORD: '${PIHOLE_WEBPASSWORD}'
+  network_mode: host
   volumes:
-    - pihole_etc:/etc/pihole
-    - pihole_dnsmasq:/etc/dnsmasq.d
-
+    - 'pihole_etc:/etc/pihole'
+    - 'pihole_dnsmasq:/etc/dnsmasq.d'
   influxdb:
-    image: influxdb:2.7
+    image: 'influxdb:2.7'
     container_name: influxdb
     restart: unless-stopped
     ports:
-      - "8086:8086"
+      - '8086:8086'
     volumes:
-      - influxdb2:/var/lib/influxdb2
+      - 'influxdb2:/var/lib/influxdb2'
     environment:
       DOCKER_INFLUXDB_INIT_MODE: setup
-      DOCKER_INFLUXDB_INIT_USERNAME: "${INFLUX_INIT_USERNAME}"
-      DOCKER_INFLUXDB_INIT_PASSWORD: "${INFLUX_INIT_PASSWORD}"
-      DOCKER_INFLUXDB_INIT_ORG: "${INFLUX_ORG}"
-      DOCKER_INFLUXDB_INIT_BUCKET: "${INFLUX_BUCKET}"
-      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "${INFLUX_INIT_TOKEN}"
-
+      DOCKER_INFLUXDB_INIT_USERNAME: '${INFLUX_INIT_USERNAME}'
+      DOCKER_INFLUXDB_INIT_PASSWORD: '${INFLUX_INIT_PASSWORD}'
+      DOCKER_INFLUXDB_INIT_ORG: '${INFLUX_ORG}'
+      DOCKER_INFLUXDB_INIT_BUCKET: '${INFLUX_BUCKET}'
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: '${INFLUX_INIT_TOKEN}'
   grafana:
-    image: grafana/grafana-oss:latest
+    image: 'grafana/grafana-oss:latest'
     container_name: grafana
     restart: unless-stopped
     depends_on:
       - influxdb
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
-      - grafana_data:/var/lib/grafana
+      - 'grafana_data:/var/lib/grafana'
     environment:
-      GF_SECURITY_ADMIN_USER: "admin"
-      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD}"
-
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: '${GRAFANA_ADMIN_PASSWORD}'
   pinger:
     build:
       context: ./pinger
@@ -65,10 +60,9 @@ pihole:
       - influxdb
     env_file:
       - .env.monitor
-
 volumes:
-  portainer_data:
-  pihole_etc:
-  pihole_dnsmasq:
-  influxdb2:
-  grafana_data:
+  portainer_data: null
+  pihole_etc: null
+  pihole_dnsmasq: null
+  influxdb2: null
+  grafana_data: null
