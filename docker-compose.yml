@@ -61,8 +61,6 @@ services:
       INFLUX_BUCKET: network_metrics
       PING_TARGET: 1.1.1.1
       PING_INTERVAL: 30
-    networks:
-      - backend
       
 volumes:
   portainer_data: null
