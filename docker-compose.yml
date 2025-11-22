@@ -55,7 +55,7 @@ services:
     depends_on:
       - influxdb
     environment:
-      INFLUX_HOST: influxdb
+      INFLUX_HOST: http://influxdb:8086
       INFLUX_DB: scraperdb
       INFLUX_USER: admin
       INFLUX_PASS: changeme
