@@ -8,7 +8,7 @@ const influx = new Influx.InfluxDB({
   host: process.env.INFLUX_HOST || 'influxdb',
   database: process.env.INFLUX_DB || 'scraperdb',
   username: process.env.INFLUX_USER || 'admin',
-  password: process.env.INFLUX_PASS || 'admin',
+  password: process.env.INFLUX_PASS || 'changeme',
 });
 
 // Create database if not exists

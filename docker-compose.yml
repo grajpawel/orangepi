@@ -26,7 +26,7 @@ services:
     environment:
       DOCKER_INFLUXDB_INIT_MODE: setup
       DOCKER_INFLUXDB_INIT_USERNAME: "admin"
-      DOCKER_INFLUXDB_INIT_PASSWORD: "admin"
+      DOCKER_INFLUXDB_INIT_PASSWORD: "changeme"
       DOCKER_INFLUXDB_INIT_ORG: "my-org"
       DOCKER_INFLUXDB_INIT_BUCKET: "network_metrics"
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "my-super-secret-token"
@@ -58,7 +58,7 @@ services:
       INFLUX_HOST: influxdb
       INFLUX_DB: scraperdb
       INFLUX_USER: admin
-      INFLUX_PASS: admin
+      INFLUX_PASS: changeme
       
   pinger:
     build:
