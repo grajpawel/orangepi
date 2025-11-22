@@ -1,22 +1,16 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 const cron = require('node-cron');
-const Influx = require('influx');
+const { InfluxDB, Point } = require('@influxdata/influxdb-client');
 
-// Configure InfluxDB connection
-const influx = new Influx.InfluxDB({
-  host: process.env.INFLUX_HOST || 'influxdb',
-  database: process.env.INFLUX_DB || 'scraperdb',
-  username: process.env.INFLUX_USER || 'admin',
-  password: process.env.INFLUX_PASS || 'changeme',
-});
+// InfluxDB 2.x config from environment
+const INFLUX_URL = process.env.INFLUX_URL || 'http://influxdb:8086';
+const INFLUX_TOKEN = process.env.INFLUX_TOKEN || 'my-super-secret-token';
+const INFLUX_ORG = process.env.INFLUX_ORG || 'my-org';
+const INFLUX_BUCKET = process.env.INFLUX_BUCKET || 'scraperdb';
 
-// Create database if not exists
-influx.getDatabaseNames().then(names => {
-  if (!names.includes(process.env.INFLUX_DB || 'scraperdb')) {
-    return influx.createDatabase(process.env.INFLUX_DB || 'scraperdb');
-  }
-});
+const influxDB = new InfluxDB({ url: INFLUX_URL, token: INFLUX_TOKEN });
+const writeApi = influxDB.getWriteApi(INFLUX_ORG, INFLUX_BUCKET, 'ns');
 
 // Scraper function
 async function scrapeAndStore() {
@@ -32,32 +26,29 @@ async function scrapeAndStore() {
     });
     const $ = cheerio.load(response.data);
     const rows = $('table tr');
-    let points = [];
+    let count = 0;
     rows.each((i, row) => {
       const tds = $(row).find('td');
       if (tds.length > 0) {
         const dateHour = $(tds[0]).text().trim();
-        // Extract hour (e.g., H01) from dateHour string
         const hourMatch = dateHour.match(/H\d{2}/);
         const hour = hourMatch ? hourMatch[0] : '';
-        // The price is the 13th td (index 12) in your sample (adjust if needed)
         let priceRaw = $(tds[13]).text().trim();
-        // Replace comma with dot for decimal
         let price = parseFloat(priceRaw.replace(',', '.'));
         if (dateHour && hour && !isNaN(price)) {
-          points.push({
-            measurement: 'scraped_prices',
-            tags: { hour },
-            fields: { price },
-            timestamp: new Date(),
-          });
+          const point = new Point('scraped_prices')
+            .tag('hour', hour)
+            .stringField('dateHour', dateHour)
+            .floatField('price', price)
+            .timestamp(new Date());
+          writeApi.writePoint(point);
+          count++;
         }
       }
     });
-    if (points.length > 0) {
-      await influx.writePoints(points);
-      console.log('Points to be written to InfluxDB:', points);
-      console.log(`Scraped and stored ${points.length} rows at`, new Date());
+    await writeApi.flush();
+    if (count > 0) {
+      console.log(`Scraped and stored ${count} rows at`, new Date());
     } else {
       console.log('No valid data found to store.');
     }
@@ -67,7 +58,7 @@ async function scrapeAndStore() {
 }
 
 // Schedule to run every day at 02:00 AM
-cron.schedule('0 15 * * *', scrapeAndStore);
+cron.schedule('0 2 * * *', scrapeAndStore);
 
 // For testing: run once on startup
 scrapeAndStore();
