@@ -58,7 +58,7 @@ async function scrapeAndStore() {
 }
 
 // Schedule to run every day at 02:00 AM
-cron.schedule('0 2 * * *', scrapeAndStore);
+cron.schedule('0 15 * * *', scrapeAndStore);
 
 // For testing: run once on startup
 scrapeAndStore();
