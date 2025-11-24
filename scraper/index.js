@@ -31,16 +31,29 @@ async function scrapeAndStore() {
       const tds = $(row).find('td');
       if (tds.length > 0) {
         const dateHour = $(tds[0]).text().trim();
-        const hourMatch = dateHour.match(/H\d{2}/);
-        const hour = hourMatch ? hourMatch[0] : '';
+        
+        // Extract date and hour from the format like "2025-11-22 H01"
+        const dateMatch = dateHour.match(/(\d{4}-\d{2}-\d{2})\s+H(\d{2})/);
+        if (!dateMatch) return;
+        
+        const dateStr = dateMatch[1]; // e.g., "2025-11-22"
+        const hourNum = parseInt(dateMatch[2], 10); // e.g., 1 from "H01"
+        const hour = dateMatch[0].match(/H\d{2}/)[0]; // e.g., "H01"
+        
+        // Parse price from column 13
         let priceRaw = $(tds[13]).text().trim();
         let price = parseFloat(priceRaw.replace(',', '.'));
-        if (dateHour && hour && !isNaN(price)) {
-          const point = new Point('scraped_prices')
-            .tag('hour', hour)
-            .stringField('dateHour', dateHour)
+        
+        if (!isNaN(price) && dateStr && !isNaN(hourNum)) {
+          // Create a proper timestamp for when this price is valid
+          // Hour 1 = 00:00-01:00, Hour 2 = 01:00-02:00, etc.
+          const timestamp = new Date(`${dateStr}T${String(hourNum - 1).padStart(2, '0')}:00:00.000Z`);
+          
+          const point = new Point('electricity_price')
+            .tag('hour', hour)  // Keep hour tag for easy filtering (H01-H24)
             .floatField('price', price)
-            .timestamp(new Date());
+            .timestamp(timestamp);
+          
           writeApi.writePoint(point);
           count++;
         }
@@ -57,7 +70,7 @@ async function scrapeAndStore() {
   }
 }
 
-// Schedule to run every day at 02:00 AM
+// Schedule to run every day at 3 PM
 cron.schedule('0 15 * * *', scrapeAndStore);
 
 // For testing: run once on startup
